@@ -734,8 +734,8 @@ class NervousnessDetector:
         faces = self.face_cascade.detectMultiScale(
             gray, 
             scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(80, 80),
+            minNeighbors=3,
+            minSize=(60, 60),
             flags=cv2.CASCADE_SCALE_IMAGE
         )
         
@@ -843,7 +843,7 @@ class NervousnessDetector:
             nervous = score > self.threshold
 
             # Only send image when it actually matters
-            if nervous and confidence > 0.5:
+            if nervous and confidence > 0.1:
                 _, buffer = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
                 image_base64 = base64.b64encode(buffer).decode("utf-8")
 
@@ -925,8 +925,8 @@ class NervousnessDetector:
             
             self.optical_flow_buffer.append(avg_movement)
             
-            if len(self.optical_flow_buffer) >= 20:
-                recent_flow = list(self.optical_flow_buffer)[-20:]
+            if len(self.optical_flow_buffer) >= 5:
+                recent_flow = list(self.optical_flow_buffer)[-5:]
                 flow_mean = np.mean(recent_flow)
                 flow_std = np.std(recent_flow)
                 score = min((flow_mean / 3.0) * (1 + flow_std / 2.0), 1.0)
@@ -953,8 +953,8 @@ class NervousnessDetector:
         
         self.movement_buffer.append(displacement)
         
-        if len(self.movement_buffer) >= 30:
-            recent = list(self.movement_buffer)[-30:]
+        if len(self.movement_buffer) >= 5:
+            recent = list(self.movement_buffer)[-5:]
             mean_movement = np.mean(recent)
             std_movement = np.std(recent)
             
@@ -976,10 +976,10 @@ class NervousnessDetector:
         current_eye_count = len(eyes)
         self.eye_blink_events.append(current_eye_count)
         
-        if len(self.eye_blink_events) < 30:
+        if len(self.eye_blink_events) < 5:
             return 0.0
         
-        recent = list(self.eye_blink_events)[-30:]
+        recent = list(self.eye_blink_events)[-5:]
         
         blinks = 0
         for i in range(1, len(recent)):
@@ -1006,8 +1006,8 @@ class NervousnessDetector:
         self.face_size_buffer.append(size_change)
         self.prev_face_size = current_size
         
-        if len(self.face_size_buffer) >= 30:
-            recent = list(self.face_size_buffer)[-30:]
+        if len(self.face_size_buffer) >= 5:
+            recent = list(self.face_size_buffer)[-5:]
             mean_change = np.mean(recent)
             significant_changes = sum(1 for c in recent if c > 0.02)
             
@@ -1026,8 +1026,8 @@ class NervousnessDetector:
         
         self.head_pose_buffer.append((rel_x, rel_y))
         
-        if len(self.head_pose_buffer) >= 30:
-            recent = list(self.head_pose_buffer)[-30:]
+        if len(self.head_pose_buffer) >= 5:
+            recent = list(self.head_pose_buffer)[-5:]
             x_positions = [pos[0] for pos in recent]
             y_positions = [pos[1] for pos in recent]
             
@@ -1053,10 +1053,10 @@ class NervousnessDetector:
     
     def _calculate_movement_frequency(self):
         """Analyze frequency of movements using FFT."""
-        if len(self.movement_buffer) < 30:
+        if len(self.movement_buffer) < 5:
             return 0.0
         
-        recent = list(self.movement_buffer)[-30:]
+        recent = list(self.movement_buffer)[-5:]
         fft = np.fft.fft(recent)
         power = np.abs(fft[:len(fft)//2])
         
@@ -1126,8 +1126,8 @@ class NervousnessDetector:
             
             self.mouth_aspect_ratio_buffer.append(mouth_activity)
             
-            if len(self.mouth_aspect_ratio_buffer) >= 20:
-                recent_mouth = list(self.mouth_aspect_ratio_buffer)[-20:]
+            if len(self.mouth_aspect_ratio_buffer) >= 5:
+                recent_mouth = list(self.mouth_aspect_ratio_buffer)[-5:]
                 
                 # Calculate mouth movement statistics
                 mouth_mean = np.mean(recent_mouth)

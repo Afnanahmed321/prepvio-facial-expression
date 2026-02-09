@@ -22,7 +22,7 @@ app = Flask(__name__)
 CORS(app)
 
 detector = NervousnessDetector(
-    nervousness_threshold=0.6,
+    nervousness_threshold=0.005,
     save_dir="nervous_captures",
     buffer_size=40
 )
@@ -125,7 +125,7 @@ def analyze_frame():
         image_url = None
         
         # Upload to Cloudinary if nervous and confident
-        if image_base64 and nervous and confidence > 0.4:
+        if image_base64 and nervous and confidence > 0.1:
             # Check if this is a new peak for this session
             session_key = f"{session_id}_{question_index}"
             current_time = time.time()
