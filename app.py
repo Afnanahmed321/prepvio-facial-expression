@@ -233,9 +233,11 @@ def test_cloudinary():
             "message": str(e)
         }), 500
 
-
 if __name__ == "__main__":
     print("🚀 Nervousness Detection Server Starting...")
     print(f"📁 Save directory: {os.path.abspath(detector.save_dir)}")
     print(f"☁️  Cloudinary configured: {cloudinary.config().cloud_name or 'NOT CONFIGURED'}")
-    app.run(host="127.0.0.1", port=5050, debug=True)
+
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
+
